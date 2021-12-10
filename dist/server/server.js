@@ -13,6 +13,7 @@ class App {
         this.port = port;
         const app = (0, express_1.default)();
         app.use(express_1.default.static(path_1.default.join(__dirname, '../client')));
+        app.use(express_1.default.static(path_1.default.join(__dirname, '../client/assets')));
         app.get('/', (req, res) => {
             res.sendFile(__dirname + '../client/index.html');
         });

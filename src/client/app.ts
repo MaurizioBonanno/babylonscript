@@ -15,9 +15,18 @@ class Game {
     }
     createScene() {
         this.scene = new BABYLON.Scene(this.engine);
-      //  this.scene.clearColor = new BABYLON.Color4(1,0,1);
  
+      //creo la camera 
+      this.createFreeCamera();
 
+
+        var light = new BABYLON.PointLight("mainLight",new BABYLON.Vector3(0,10,0),this.scene);
+        light.intensity = .7;
+
+        this.createGround();
+    }
+
+    createFreeCamera(){
         this.camera = new BABYLON.FreeCamera(
             "camera1",
             new BABYLON.Vector3(0, 5, -10),
@@ -25,16 +34,14 @@ class Game {
         );
         this.camera.checkCollisions = true;
         this.camera.applyGravity = true;
-        this.camera.attachControl(this.canvas);
-        var light = new BABYLON.PointLight("mainLight",new BABYLON.Vector3(0,10,0),this.scene);
-        light.intensity = .7;
-      //  light.diffuse = new BABYLON.Color3(0,0,0);
 
-        this.createGround();
+        this.camera.attachControl(this.canvas);
+
+        this.camera.keysUp.push("w".charCodeAt(0));
     }
 
     createGround(){
-        var ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground","assets/images/hmap2.jpg",{
+        var ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground","assets/images/hmap1.png",{
             width:200,height:200,subdivisions:20,minHeight:1});
             ground.checkCollisions = true;
         var groundMaterial = new BABYLON.StandardMaterial("groundMaterial",this.scene);
