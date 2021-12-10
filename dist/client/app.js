@@ -122,12 +122,34 @@ class Game {
         this.canvas = document.getElementById("renderCanvas");
         this.engine = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Engine(this.canvas, true);
     }
+    setCanvasOnPointerLock() {
+        this.canvas.requestPointerLock();
+    }
     startGame() {
         this.createScene();
         this.doRender();
     }
+    modifySetting() {
+        if (!this.scene.alreadyLocked) {
+            console.log("Requesting pointer Lock");
+            this.scene.onPointerDown = this.setCanvasOnPointerLock();
+        }
+        else {
+            console.log("Not requesting pointer Lock");
+        }
+        document.addEventListener("pointerlockchange", () => {
+            var element = document.pointerLockElement || null;
+            if (element) {
+                this.scene.alreadyLocked = true;
+            }
+            else {
+                this.scene.alreadyLocked = false;
+            }
+        });
+    }
     createScene() {
         this.scene = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Scene(this.engine);
+        this.modifySetting();
         //creo la camera 
         this.createFreeCamera();
         var light = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.PointLight("mainLight", new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 10, 0), this.scene);
@@ -140,10 +162,17 @@ class Game {
         this.camera.applyGravity = true;
         this.camera.attachControl(this.canvas);
         this.camera.keysUp.push("w".charCodeAt(0));
+        this.camera.keysUp.push("W".charCodeAt(0));
+        this.camera.keysDown.push("s".charCodeAt(0));
+        this.camera.keysDown.push("S".charCodeAt(0));
+        this.camera.keysRight.push("d".charCodeAt(0));
+        this.camera.keysRight.push("D".charCodeAt(0));
+        this.camera.keysLeft.push("a".charCodeAt(0));
+        this.camera.keysLeft.push("A".charCodeAt(0));
     }
     createGround() {
         var ground = babylonjs__WEBPACK_IMPORTED_MODULE_0__.MeshBuilder.CreateGroundFromHeightMap("ground", "assets/images/hmap1.png", {
-            width: 200, height: 200, subdivisions: 20, minHeight: 1
+            width: 2000, height: 2000, subdivisions: 20, minHeight: 0, maxHeight: 100
         });
         ground.checkCollisions = true;
         var groundMaterial = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.StandardMaterial("groundMaterial", this.scene);

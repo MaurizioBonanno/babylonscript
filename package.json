@@ -8,7 +8,6 @@
     "watch": "webpack -w",
     "dev": "concurrently -k \"tsc -p ./src -w\" \"tsc -p ./src/server -w\" \"nodemon ./dist/server/server.js\"",
     "serve": "concurrently -k \"tsc -p ./src/server -w\" \"nodemon ./dist/server/server.js\"",
-    "start": "concurrently -k \"webpack --config webpack.config.js\" \" tsc -p ./src/server -w\" \"nodemon ./dist/server/server.js\"",
     "startserve": "concurrently -k \"webpack -w\" \"tsc -p ./src/server -w\" \"nodemon ./dist/server/server.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
