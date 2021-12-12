@@ -119,6 +119,12 @@ __webpack_require__.r(__webpack_exports__);
 
 class Game {
     constructor() {
+        this.tankSpeed = 1;
+        this.isWPressed = false;
+        this.isSPressed = false;
+        this.isAPressed = false;
+        this.isDPressed = false;
+        this.tankFrontVector = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 0, 1);
         this.canvas = document.getElementById("renderCanvas");
         this.engine = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Engine(this.canvas, true);
     }
@@ -127,15 +133,17 @@ class Game {
     }
     startGame() {
         this.createScene();
+        this.modifySetting();
+        this.addKeyEvent();
         this.doRender();
     }
     modifySetting() {
         if (!this.scene.alreadyLocked) {
-            console.log("Requesting pointer Lock");
+            // console.log("Requesting pointer Lock");
             this.scene.onPointerDown = this.setCanvasOnPointerLock();
         }
         else {
-            console.log("Not requesting pointer Lock");
+            // console.log("Not requesting pointer Lock");
         }
         document.addEventListener("pointerlockchange", () => {
             var element = document.pointerLockElement || null;
@@ -147,14 +155,29 @@ class Game {
             }
         });
     }
+    createTank() {
+        var tank = babylonjs__WEBPACK_IMPORTED_MODULE_0__.MeshBuilder.CreateBox("HeroTank", { height: 1, depth: 3, width: 3 }, this.scene);
+        var tankMaterial = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.StandardMaterial("tankMaterial", this.scene);
+        tankMaterial.diffuseColor = babylonjs__WEBPACK_IMPORTED_MODULE_0__.Color3.Red();
+        tankMaterial.emissiveColor = babylonjs__WEBPACK_IMPORTED_MODULE_0__.Color3.Blue();
+        tank.material = tankMaterial;
+        tank.position.y += 0.9;
+        return tank;
+    }
     createScene() {
         this.scene = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Scene(this.engine);
-        this.modifySetting();
         //creo la camera 
         this.createFreeCamera();
-        var light = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.PointLight("mainLight", new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 10, 0), this.scene);
-        light.intensity = .7;
+        this.tank = this.createTank();
+        this.followCamera = this.createFollowCamera(this.tank);
+        this.scene.activeCamera = this.followCamera;
+        this.createLight();
         this.createGround();
+    }
+    createLight() {
+        var light = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.PointLight("mainLight", new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 10, 0), this.scene);
+        var light1 = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.PointLight("mainLight", new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 10, 0), this.scene);
+        light.intensity = .7;
     }
     createFreeCamera() {
         this.camera = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.FreeCamera("camera1", new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 5, -10), this.scene);
@@ -172,15 +195,76 @@ class Game {
     }
     createGround() {
         var ground = babylonjs__WEBPACK_IMPORTED_MODULE_0__.MeshBuilder.CreateGroundFromHeightMap("ground", "assets/images/hmap1.png", {
-            width: 2000, height: 2000, subdivisions: 20, minHeight: 0, maxHeight: 100
+            width: 2000, height: 2000, subdivisions: 20, minHeight: 0, maxHeight: 5000
         });
         ground.checkCollisions = true;
         var groundMaterial = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.StandardMaterial("groundMaterial", this.scene);
         groundMaterial.diffuseTexture = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Texture("assets/images/grass.jpg", this.scene);
         ground.material = groundMaterial;
     }
+    createFollowCamera(target) {
+        var camera = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.FollowCamera("tankFollowCamera", target.position, this.scene, target);
+        camera.radius = 20;
+        camera.heightOffset = 4;
+        camera.rotationOffset = 180;
+        camera.cameraAcceleration = 0.5;
+        camera.maxCameraSpeed = 50;
+        return camera;
+    }
+    tankMove() {
+        var yTankMovement = 0;
+        if (this.tank.position.y > 1) {
+            yTankMovement = -6;
+        }
+        if (this.isWPressed) {
+            this.tank.moveWithCollisions(this.tankFrontVector.multiplyByFloats(this.tankSpeed, this.tankSpeed, this.tankSpeed));
+        }
+        if (this.isSPressed) {
+            this.tank.moveWithCollisions(this.tankFrontVector.multiplyByFloats(-1 * this.tankSpeed, -1 * this.tankSpeed, -1 * this.tankSpeed));
+        }
+        if (this.isAPressed) {
+            this.tank.rotation.y -= .1;
+            this.tankFrontVector = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(Math.sin(this.tank.rotation.y), 0, Math.cos(this.tank.rotation.y));
+        }
+        if (this.isDPressed) {
+            this.tank.rotation.y += .1;
+            this.tankFrontVector = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(Math.sin(this.tank.rotation.y), 0, Math.cos(this.tank.rotation.y));
+        }
+    }
+    addKeyEvent() {
+        document.addEventListener("keydown", (evt) => {
+            if (evt.key == 'w') {
+                this.isWPressed = true;
+            }
+            if (evt.key == 'a') {
+                this.isAPressed = true;
+            }
+            if (evt.key == 'd') {
+                this.isDPressed = true;
+            }
+            if (evt.key == 's') {
+                this.isSPressed = true;
+            }
+        });
+        document.addEventListener("keyup", (evt) => {
+            if (evt.key == 'w') {
+                this.isWPressed = false;
+            }
+            if (evt.key == 'a') {
+                this.isAPressed = false;
+            }
+            if (evt.key == 'd') {
+                this.isDPressed = false;
+            }
+            if (evt.key == 's') {
+                this.isSPressed = false;
+            }
+        });
+    }
     doRender() {
         this.engine.runRenderLoop(() => {
+            //  this.modifySetting();
+            this.tankMove();
             this.scene.render();
         });
         window.addEventListener("resize", () => {
