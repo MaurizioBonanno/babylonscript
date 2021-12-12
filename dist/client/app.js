@@ -171,8 +171,16 @@ class Game {
         this.tank = this.createTank();
         this.followCamera = this.createFollowCamera(this.tank);
         this.scene.activeCamera = this.followCamera;
+        // carico il dude
+        //dude caricato
         this.createLight();
         this.createGround();
+    }
+    loadDude() {
+        babylonjs__WEBPACK_IMPORTED_MODULE_0__.SceneLoader.ImportMesh("him", "Dude/", "dude.babylon", this.scene, function (newMeshes, particleSystems, skeletons) {
+            newMeshes[0].position = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 0, 5); // The original dude
+            this.scene.beginAnimation(skeletons[0], 0, 120, 1.0, true);
+        });
     }
     createLight() {
         var light = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.PointLight("mainLight", new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 10, 0), this.scene);

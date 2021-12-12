@@ -66,11 +66,21 @@ class Game {
       this.tank = this.createTank();
       this.followCamera = this.createFollowCamera(this.tank);
       this.scene.activeCamera = this.followCamera;
+      // carico il dude
+
+      //dude caricato
       this.createLight();
 
         
 
         this.createGround();
+    }
+    loadDude(){
+        BABYLON.SceneLoader.ImportMesh("him", "Dude/", "dude.babylon", this.scene, function (newMeshes, particleSystems, skeletons) {
+
+            newMeshes[0].position = new BABYLON.Vector3(0, 0, 5);  // The original dude
+            this.scene.beginAnimation(skeletons[0], 0, 120, 1.0, true);
+        })
     }
     createLight() {
         var light = new BABYLON.PointLight("mainLight",new BABYLON.Vector3(0,10,0),this.scene);
