@@ -161,7 +161,7 @@ class Game {
         tankMaterial.diffuseColor = babylonjs__WEBPACK_IMPORTED_MODULE_0__.Color3.Red();
         tankMaterial.emissiveColor = babylonjs__WEBPACK_IMPORTED_MODULE_0__.Color3.Blue();
         tank.material = tankMaterial;
-        tank.position.y += 0.9;
+        tank.position.y += 0.1;
         return tank;
     }
     createScene() {
@@ -174,13 +174,29 @@ class Game {
         // carico il dude
         //dude caricato
         this.createLight();
+        this.loadDude();
         this.createGround();
     }
     loadDude() {
-        babylonjs__WEBPACK_IMPORTED_MODULE_0__.SceneLoader.ImportMesh("him", "Dude/", "dude.babylon", this.scene, function (newMeshes, particleSystems, skeletons) {
-            newMeshes[0].position = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 0, 5); // The original dude
-            this.scene.beginAnimation(skeletons[0], 0, 120, 1.0, true);
+        babylonjs__WEBPACK_IMPORTED_MODULE_0__.SceneLoader.ImportMeshAsync("him", "assets/models/Dude/", "Dude.babylon", this.scene)
+            .then((result) => {
+            this.heroDude = result.meshes[0];
+            result.meshes[0].name = "HeroDude";
+            this.heroDude.scaling = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(.085, .085, .085);
+            this.scene.beginAnimation(result.skeletons[0], 0, 120, true, 1.0);
         });
+    }
+    heroDudeMove() {
+        var hero = this.scene.getMeshByName("HeroDude");
+        if (hero) {
+            console.log("posizione tank:" + this.tank.position);
+            console.log("posizione hero:" + hero.position);
+            var direction = this.tank.position.subtract(this.heroDude.position);
+            var dir = direction.normalize();
+            var alpha = Math.atan2(-1 * dir.x, -1 * dir.z);
+            this.heroDude.rotation.y = alpha;
+            console.log("direzione:" + dir);
+        }
     }
     createLight() {
         var light = new babylonjs__WEBPACK_IMPORTED_MODULE_0__.PointLight("mainLight", new babylonjs__WEBPACK_IMPORTED_MODULE_0__.Vector3(0, 10, 0), this.scene);
@@ -271,8 +287,8 @@ class Game {
     }
     doRender() {
         this.engine.runRenderLoop(() => {
-            //  this.modifySetting();
             this.tankMove();
+            this.heroDudeMove();
             this.scene.render();
         });
         window.addEventListener("resize", () => {

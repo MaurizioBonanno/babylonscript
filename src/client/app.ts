@@ -11,6 +11,7 @@ class Game {
     isSPressed = false;
     isAPressed = false;
     isDPressed = false;
+    heroDude: any;
     tankFrontVector = new BABYLON.Vector3(0,0,1);
 
     constructor(){
@@ -54,7 +55,7 @@ class Game {
         tankMaterial.diffuseColor = BABYLON.Color3.Red();
         tankMaterial.emissiveColor = BABYLON.Color3.Blue();
         tank.material = tankMaterial;
-        tank.position.y += 0.9;
+        tank.position.y += 0.1;
         return tank;
     }
 
@@ -71,16 +72,31 @@ class Game {
       //dude caricato
       this.createLight();
 
-        
+      this.loadDude();  
 
         this.createGround();
     }
     loadDude(){
-        BABYLON.SceneLoader.ImportMesh("him", "Dude/", "dude.babylon", this.scene, function (newMeshes, particleSystems, skeletons) {
-
-            newMeshes[0].position = new BABYLON.Vector3(0, 0, 5);  // The original dude
-            this.scene.beginAnimation(skeletons[0], 0, 120, 1.0, true);
+        BABYLON.SceneLoader.ImportMeshAsync("him", "assets/models/Dude/", "Dude.babylon", this.scene)
+        .then((result)=>{
+            this.heroDude = result.meshes[0];
+            result.meshes[0].name = "HeroDude";
+            this.heroDude.scaling = new BABYLON.Vector3(.085,.085,.085);
+            this.scene.beginAnimation(result.skeletons[0],0,120,true,1.0);
         })
+        
+    }
+    heroDudeMove(){
+        var hero = this.scene.getMeshByName("HeroDude");
+        if(hero){
+            console.log("posizione tank:"+this.tank.position);
+            console.log("posizione hero:"+hero.position);
+            var direction = this.tank.position.subtract(this.heroDude.position);
+            var dir = direction.normalize();
+            var alpha = Math.atan2(-1*dir.x, -1*dir.z);
+            this.heroDude.rotation.y = alpha;
+            console.log("direzione:"+dir);
+        }
     }
     createLight() {
         var light = new BABYLON.PointLight("mainLight",new BABYLON.Vector3(0,10,0),this.scene);
@@ -191,9 +207,9 @@ class Game {
     }
     doRender(){
         this.engine.runRenderLoop(()=>{ //loop game
-
-          //  this.modifySetting();
+            
             this.tankMove();
+            this.heroDudeMove();
             this.scene.render();
         });
         window.addEventListener("resize", ()=>{
