@@ -189,13 +189,18 @@ class Game {
     heroDudeMove() {
         var hero = this.scene.getMeshByName("HeroDude");
         if (hero) {
-            console.log("posizione tank:" + this.tank.position);
-            console.log("posizione hero:" + hero.position);
+            // console.log("posizione tank:"+this.tank.position);
+            // console.log("posizione hero:"+hero.position);
             var direction = this.tank.position.subtract(this.heroDude.position);
+            var distance = direction.length();
             var dir = direction.normalize();
+            var speed = 1;
+            if (distance > 10) {
+                this.heroDude.moveWithCollisions(dir.multiplyByFloats(speed, speed, speed));
+            }
             var alpha = Math.atan2(-1 * dir.x, -1 * dir.z);
             this.heroDude.rotation.y = alpha;
-            console.log("direzione:" + dir);
+            console.log("distance:" + distance);
         }
     }
     createLight() {
