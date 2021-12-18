@@ -1,4 +1,39 @@
 import * as BABYLON from "babylonjs";
+class Dude{
+    speed: any = 1;
+    scaling = .085;
+    hero: BABYLON.AbstractMesh;
+    constructor(private scena: BABYLON.Scene){
+    this.loadDudle();   
+    }
+    loadDudle() {
+        BABYLON.SceneLoader.ImportMeshAsync("him", "assets/models/Dude/", "Dude.babylon", this.scena)
+        .then((result)=>{
+            this.hero = result.meshes[0];
+            result.meshes[0].name = "Hero";
+            this.hero.scaling = new BABYLON.Vector3(this.scaling,this.scaling,this.scaling);
+            this.scena.beginAnimation(result.skeletons[0],0,120,true,1.0);
+        })
+    }
+
+    move(){
+        var hero = this.hero;
+        var tank = this.scena.getMeshByName("HeroTank");
+        if(hero){
+            if(tank){
+                var direction = tank.position.subtract(hero.position);
+                var distance = direction.length();
+                var dir = direction.normalize();
+                if(distance > 10){
+                    hero.moveWithCollisions(dir.multiplyByFloats(this.speed,this.speed,this.speed));
+                }
+                var alpha = Math.atan2(-1*dir.x, -1*dir.z);
+                hero.rotation.y = alpha;            }
+        }else{
+            console.log("tank non trovato");
+        }
+    }
+}
 class Game {
     canvas: any;
     engine: BABYLON.Engine;
@@ -11,8 +46,10 @@ class Game {
     isSPressed = false;
     isAPressed = false;
     isDPressed = false;
-    heroDude: any;
+    bounder: BABYLON.Mesh;
     tankFrontVector = new BABYLON.Vector3(0,0,1);
+
+    hero: any;
 
     constructor(){
         this.canvas = document.getElementById("renderCanvas");
@@ -56,6 +93,7 @@ class Game {
         tankMaterial.emissiveColor = BABYLON.Color3.Blue();
         tank.material = tankMaterial;
         tank.position.y += 0.1;
+        tank.isVisible = false;
         return tank;
     }
 
@@ -68,43 +106,12 @@ class Game {
       this.followCamera = this.createFollowCamera(this.tank);
       this.scene.activeCamera = this.followCamera;
       // carico il dude
-
+      this.hero = new Dude(this.scene);
       //dude caricato
       this.createLight();
+      this.createGround();
+    }
 
-      this.loadDude();  
-
-        this.createGround();
-    }
-    loadDude(){
-        BABYLON.SceneLoader.ImportMeshAsync("him", "assets/models/Dude/", "Dude.babylon", this.scene)
-        .then((result)=>{
-            this.heroDude = result.meshes[0];
-            result.meshes[0].name = "HeroDude";
-            this.heroDude.scaling = new BABYLON.Vector3(.085,.085,.085);
-            this.scene.beginAnimation(result.skeletons[0],0,120,true,1.0);
-        })
-        
-    }
-    heroDudeMove(){
-        var hero = this.scene.getMeshByName("HeroDude");
-        if(hero){
-            // console.log("posizione tank:"+this.tank.position);
-            // console.log("posizione hero:"+hero.position);
-            var direction = this.tank.position.subtract(this.heroDude.position);
-            var distance = direction.length();
-            var dir = direction.normalize();   
-            var speed = 1;
-            if(distance > 10){
-                this.heroDude.moveWithCollisions(dir.multiplyByFloats(speed,speed,speed));
-            }
-            
-            var alpha = Math.atan2(-1*dir.x, -1*dir.z);
-            this.heroDude.rotation.y = alpha;
-            
-            console.log("distance:"+distance);
-        }
-    }
     createLight() {
         var light = new BABYLON.PointLight("mainLight",new BABYLON.Vector3(0,10,0),this.scene);
         var light1 = new BABYLON.PointLight("mainLight",new BABYLON.Vector3(0,10,0),this.scene);
@@ -216,7 +223,7 @@ class Game {
         this.engine.runRenderLoop(()=>{ //loop game
             
             this.tankMove();
-            this.heroDudeMove();
+            this.hero.move();
             this.scene.render();
         });
         window.addEventListener("resize", ()=>{
