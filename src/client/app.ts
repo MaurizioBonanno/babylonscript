@@ -1,39 +1,7 @@
 import * as BABYLON from "babylonjs";
-class Dude{
-    speed: any = 1;
-    scaling = .085;
-    hero: BABYLON.AbstractMesh;
-    constructor(private scena: BABYLON.Scene){
-    this.loadDudle();   
-    }
-    loadDudle() {
-        BABYLON.SceneLoader.ImportMeshAsync("him", "assets/models/Dude/", "Dude.babylon", this.scena)
-        .then((result)=>{
-            this.hero = result.meshes[0];
-            result.meshes[0].name = "Hero";
-            this.hero.scaling = new BABYLON.Vector3(this.scaling,this.scaling,this.scaling);
-            this.scena.beginAnimation(result.skeletons[0],0,120,true,1.0);
-        })
-    }
+import { GroundWorld } from "./world";
+import { Dude } from "./dude";
 
-    move(){
-        var hero = this.hero;
-        var tank = this.scena.getMeshByName("HeroTank");
-        if(hero){
-            if(tank){
-                var direction = tank.position.subtract(hero.position);
-                var distance = direction.length();
-                var dir = direction.normalize();
-                if(distance > 10){
-                    hero.moveWithCollisions(dir.multiplyByFloats(this.speed,this.speed,this.speed));
-                }
-                var alpha = Math.atan2(-1*dir.x, -1*dir.z);
-                hero.rotation.y = alpha;            }
-        }else{
-            console.log("tank non trovato");
-        }
-    }
-}
 class Game {
     canvas: any;
     engine: BABYLON.Engine;
@@ -62,29 +30,10 @@ class Game {
     }
     startGame(){
         this.createScene();
-        this.modifySetting();
         this.addKeyEvent();
         this.doRender();
     }
 
-
-    modifySetting(){
-        if(!this.scene.alreadyLocked){
-           // console.log("Requesting pointer Lock");
-            this.scene.onPointerDown=this.setCanvasOnPointerLock();
-        }else{
-           // console.log("Not requesting pointer Lock");
-        }
-        
-        document.addEventListener("pointerlockchange", ()=>{
-            var element = document.pointerLockElement || null;
-            if(element){
-                this.scene.alreadyLocked = true;
-            }else{
-                this.scene.alreadyLocked = false;
-            }
-        })
-    }
 
     createTank(){
         var tank = BABYLON.MeshBuilder.CreateBox("HeroTank",{height: 1,depth: 3,width: 3}, this.scene);
@@ -141,12 +90,13 @@ class Game {
     }
 
     createGround(){
-        var ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground","assets/images/hmap1.png",{
+/*         var ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground","assets/images/hmap1.png",{
             width:2000,height:2000,subdivisions:20,minHeight:0,maxHeight: 5000});
             ground.checkCollisions = true;
         var groundMaterial = new BABYLON.StandardMaterial("groundMaterial",this.scene);
         groundMaterial.diffuseTexture = new BABYLON.Texture("assets/images/grass.jpg",this.scene);
-        ground.material = groundMaterial;
+        ground.material = groundMaterial; */
+        var ground = new GroundWorld(this.scene);
             
     }
 
